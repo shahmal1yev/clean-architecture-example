@@ -1,0 +1,39 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  # Auto-register services in App layer
+  Onion\App\Services\:
+    resource: '../src/App/Services/*'
+    
+  # Make services public for testing
+  Onion\App\Services\BookService:
+    public: true
+
+  # Infrastructure layer services
+  Onion\Infrastructure\Repositories\:
+    resource: '../src/Infrastructure/Repositories/*'
+    exclude: '../src/Infrastructure/Repositories/Repository.php'
+
+  # Bind interface to implementation (public for testing)
+  Onion\Domain\Repositories\BookRepositoryInterface:
+    alias: Onion\Infrastructure\Repositories\BookRepository
+    public: true
+
+  # Database configuration (you'll want to use environment variables)
+  Onion\Infrastructure\Config\DatabaseCredentials:
+    arguments:
+      $host: 'localhost'
+      $port: 5432
+      $user: 'postgres'
+      $password: "@@Ucvlqcq8$"
+      $database: 'onion'
+
+  Onion\Infrastructure\Factory\PDOFactory:
+    arguments:
+      - '@Onion\Infrastructure\Config\DatabaseCredentials'
+
+  PDO:
+    class: PDO
+    factory: ['@Onion\Infrastructure\Factory\PDOFactory', 'create']
