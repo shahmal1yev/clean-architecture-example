@@ -24,12 +24,32 @@ services:
     resource: '../src/Presentation/Adapters/*'
     public: true
 
+  # GraphQL Services
+  Onion\Presentation\GraphQL\Types\:
+    resource: '../src/Presentation/GraphQL/Types/*'
+
+  # GraphQL Resolver with specific adapter binding
+  Onion\Presentation\GraphQL\Resolvers\BookResolver:
+    arguments:
+      - '@Onion\Presentation\Adapters\GraphBookManagementAdapter'
+
+  # GraphQL Schema as a factory
+  GraphQL\Type\Schema:
+    factory: ['@Onion\Presentation\GraphQL\Schema\SchemaBuilder', 'build']
+
+  Onion\Presentation\GraphQL\Schema\SchemaBuilder:
+    public: false
+
+  Onion\Presentation\GraphQL\GraphQLController:
+    public: true
+
   Onion\Presentation\Ports\BookManagementPort:
     alias: Onion\Presentation\Adapters\HttpBookManagementAdapter
     public: true
 
-  Onion\Infrastructure\Services\:
-    resource: '../src/Infrastructure/Services/*'
+  # GraphQL-specific Port binding
+  Onion\Presentation\Adapters\GraphBookManagementAdapter:
+    public: true
 
   Onion\Infrastructure\Repositories\:
     resource: '../src/Infrastructure/Repositories/*'
@@ -44,6 +64,9 @@ services:
 
   Onion\Domain\Services\TransactionManagerInterface:
     alias: Onion\Infrastructure\Services\TransactionManager
+    public: true
+
+  Onion\Infrastructure\Services\TransactionManager:
     public: true
 
   # Database configuration (you'll want to use environment variables)

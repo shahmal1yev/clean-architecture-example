@@ -17,7 +17,7 @@ class BookServiceTest extends TestCase
     private TransactionManagerInterface&MockObject $transactionManagerMock;
     private BookService $bookService;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         $this->repositoryMock = $this->createMock(BookRepositoryInterface::class);
         $this->transactionManagerMock = $this->createMock(TransactionManagerInterface::class);

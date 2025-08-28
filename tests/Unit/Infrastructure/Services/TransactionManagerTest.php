@@ -13,7 +13,7 @@ class TransactionManagerTest extends TestCase
     private PDO&MockObject $pdoMock;
     private TransactionManager $transactionManager;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         $this->pdoMock = $this->createMock(PDO::class);
         $this->transactionManager = new TransactionManager($this->pdoMock);
