@@ -66,6 +66,9 @@ services:
     alias: Onion\Infrastructure\Services\TransactionManager
     public: true
 
+  Onion\Infrastructure\Services\TransactionManager:
+    public: true
+
   # Database configuration (you'll want to use environment variables)
   Onion\Infrastructure\Config\DatabaseCredentials:
     arguments:

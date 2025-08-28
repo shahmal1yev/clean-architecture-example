@@ -2,17 +2,12 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use Onion\Infrastructure\DependencyInjection\ContainerFactory;
 use Onion\Presentation\GraphQL\GraphQLController;
 use Onion\Presentation\Http\Request;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 // Set up DI Container
-$container = new ContainerBuilder();
-$loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../config'));
-$loader->load('services.yml');
-$container->compile();
+$container = ContainerFactory::create(__DIR__ . '/../config');
 
 // Get GraphQL Controller
 $controller = $container->get(GraphQLController::class);
@@ -32,11 +27,8 @@ $createBookQuery = [
     }',
     'variables' => [
         'input' => [
-            'id',
             'name' => 'Clean Architecture',
             'author' => 'Robert C. Martin',
-            'created_at',
-            'updated_at'
         ]
     ]
 ];
@@ -138,7 +130,7 @@ echo "\n=== Implementation Complete! ===\n";
 echo "GraphQL has been successfully integrated into your Onion Architecture.\n";
 echo "Key architectural benefits:\n";
 echo "- Clean separation: GraphQL is purely presentation layer\n";
-echo "- Business logic unchanged: BookService remains GraphQL-agnostic\n"; 
+echo "- Business logic unchanged: BookService remains GraphQL-agnostic\n";
 echo "- Port/Adapter pattern: GraphBookManagementAdapter translates GraphQL to domain\n";
 echo "- Testable: Full test coverage with unit and feature tests\n";
 echo "- Dependency Injection: Properly configured in Symfony DI container\n";
