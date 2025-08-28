@@ -18,7 +18,7 @@ class CreateBookActionTest extends TestCase
 {
     private CreateBookAction $action;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
         $this->action = $this->container->get(CreateBookAction::class);

@@ -1,25 +1,27 @@
 <?php
 
-use Onion\Presentation\Http\Request;
-use Onion\Presentation\Routing\Router;
+error_reporting(E_ALL);
+ini_set('log_errors', 1);
+ini_set('display_errors', 0);
+ini_set('error_log', __DIR__ . '/my_error.log');
+
+
+use Onion\Infrastructure\DependencyInjection\ContainerFactory;
 use Onion\Presentation\Actions\CreateBookAction;
 use Onion\Presentation\Actions\CreateMultipleBooksAction;
 use Onion\Presentation\Actions\FindBookAction;
 use Onion\Presentation\Actions\SearchBooksAction;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Onion\Presentation\Http\Request;
+use Onion\Presentation\Routing\Router;
 
 require_once './vendor/autoload.php';
 
 // Bootstrap DI Container
-$container = new ContainerBuilder();
-$loader = new YamlFileLoader($container, new FileLocator(__DIR__."/config"));
-$loader->load('services.yml');
-$container->compile();
+$container = ContainerFactory::create(__DIR__ . '/config');
 
 // Create router and register routes
 $router = new Router($container);
+
 // Command routes (write operations)
 $router->addRoute('POST', '/books', CreateBookAction::class);
 $router->addRoute('POST', '/books/bulk', CreateMultipleBooksAction::class);
@@ -40,9 +42,9 @@ try {
         'error' => 'Internal Server Error',
         'message' => 'An unexpected error occurred'
     ], 500);
-    
+
     $errorResponse->send();
-    
+
     // Log error in production
     error_log($e->getMessage() . "\n" . $e->getTraceAsString());
 }

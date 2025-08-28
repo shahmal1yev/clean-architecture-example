@@ -2,9 +2,9 @@
 
 namespace Onion\Presentation\Routing;
 
+use Onion\Presentation\Http\JsonResponse;
 use Onion\Presentation\Http\Request;
 use Onion\Presentation\Http\Response;
-use Onion\Presentation\Http\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
