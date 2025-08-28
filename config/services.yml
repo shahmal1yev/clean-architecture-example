@@ -24,9 +24,33 @@ services:
     resource: '../src/Presentation/Adapters/*'
     public: true
 
+  # GraphQL Services
+  Onion\Presentation\GraphQL\Types\:
+    resource: '../src/Presentation/GraphQL/Types/*'
+    
+  # GraphQL Resolver with specific adapter binding
+  Onion\Presentation\GraphQL\Resolvers\BookResolver:
+    arguments:
+      - '@Onion\Presentation\Adapters\GraphBookManagementAdapter'
+    
+  # GraphQL Schema as a factory
+  GraphQL\Type\Schema:
+    factory: ['@Onion\Presentation\GraphQL\Schema\SchemaBuilder', 'build']
+    
+  Onion\Presentation\GraphQL\Schema\SchemaBuilder:
+    public: false
+    
+  Onion\Presentation\GraphQL\GraphQLController:
+    public: true
+
   # Hexagonal Architecture: Port to Adapter binding
+  # Default to HTTP adapter, but can be overridden for GraphQL context
   Onion\Presentation\Ports\BookManagementPort:
     alias: Onion\Presentation\Adapters\HttpBookManagementAdapter
+    public: true
+    
+  # GraphQL-specific Port binding  
+  Onion\Presentation\Adapters\GraphBookManagementAdapter:
     public: true
 
   # Infrastructure layer services
