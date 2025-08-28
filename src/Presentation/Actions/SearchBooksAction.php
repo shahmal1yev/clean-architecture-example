@@ -4,9 +4,9 @@ namespace Onion\Presentation\Actions;
 
 use Onion\App\Queries\BookQuery;
 use Onion\App\QueryHandlers\BookQueryHandler;
+use Onion\Presentation\Http\JsonResponse;
 use Onion\Presentation\Http\Request;
 use Onion\Presentation\Http\Response;
-use Onion\Presentation\Http\JsonResponse;
 
 /**
  * CQRS Query Action
