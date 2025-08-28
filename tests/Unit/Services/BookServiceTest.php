@@ -4,7 +4,9 @@ namespace Tests\Unit\Services;
 
 use Onion\App\Services\BookService;
 use Onion\Domain\Entities\Book;
+use Onion\Domain\Exceptions\BookCreationFailedException;
 use Onion\Domain\Repositories\BookRepositoryInterface;
+use Onion\Domain\Services\TransactionManagerInterface;
 use PDOException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -16,13 +18,23 @@ class BookServiceTest extends TestCase
 {
     private readonly BookService $service;
     private BookRepositoryInterface $mockRepository;
+    private TransactionManagerInterface $mockTransactionManager;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->mockRepository = $this->createMock(BookRepositoryInterface::class);
-        $this->service = new BookService($this->mockRepository);
+        $this->mockTransactionManager = $this->createMock(TransactionManagerInterface::class);
+        
+        // Mock transactional method to execute callback immediately
+        $this->mockTransactionManager
+            ->method('transactional')
+            ->willReturnCallback(function (callable $operation) {
+                return $operation();
+            });
+            
+        $this->service = new BookService($this->mockRepository, $this->mockTransactionManager);
     }
 
     #[Test]
@@ -105,8 +117,8 @@ class BookServiceTest extends TestCase
             ->method('save')
             ->willThrowException($exception);
 
-        $this->expectException(PDOException::class);
-        $this->expectExceptionMessage('Database connection failed');
+        $this->expectException(BookCreationFailedException::class);
+        $this->expectExceptionMessage('Book could not be created');
 
         $this->service->create('Test Book', 'Test Author');
     }

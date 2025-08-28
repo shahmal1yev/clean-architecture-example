@@ -4,6 +4,7 @@ namespace Tests\Feature\Services;
 
 use Onion\App\Services\BookService;
 use Onion\Domain\Entities\Book;
+use Onion\Domain\Exceptions\FindBookFailedException;
 use Onion\Domain\Repositories\BookRepositoryInterface;
 use Onion\Infrastructure\Repositories\BookRepository;
 use PDOException;
@@ -68,8 +69,9 @@ class BookServiceTest extends TestCase
         $specialTitle = "Cien años de soledad";
         $specialAuthor = "Gabriel García Márquez";
 
-        $book = $this->service->create($specialTitle, $specialAuthor);
-        $persistedBook = $this->repository->findById($book->getId());
+        $book1 = $this->service->create($specialTitle, $specialAuthor);
+        $book2 = $this->service->create($specialTitle, $specialAuthor);
+        $persistedBook = $this->repository->findById($book2->getId());
 
         $this->assertSame($specialTitle, $persistedBook->getName());
         $this->assertSame($specialAuthor, $persistedBook->getAuthor());
@@ -89,10 +91,10 @@ class BookServiceTest extends TestCase
     #[Test]
     public function it_throws_exception_for_nonexistent_book(): void
     {
-        $this->expectException(PDOException::class);
-        $this->expectExceptionMessage('Book not found: 99999');
+        $this->expectException(FindBookFailedException::class);
+        $this->expectExceptionMessage('Book could not be found: 99999');
 
-        $this->repository->findById(99999);
+        $this->service->find(99999);
     }
 
     #[Test]

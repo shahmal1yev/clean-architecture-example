@@ -41,8 +41,8 @@ class BookRepositoryTest extends TestCase
 
         $this->mockPdo
             ->expects($this->once())
-            ->method('query')
-            ->with("SELECT * FROM books WHERE id = 1")
+            ->method('prepare')
+            ->with("SELECT * FROM books WHERE id = :id")
             ->willReturn($this->mockStatement);
 
         $this->mockStatement
@@ -64,8 +64,8 @@ class BookRepositoryTest extends TestCase
     {
         $this->mockPdo
             ->expects($this->once())
-            ->method('query')
-            ->with("SELECT * FROM books WHERE id = 999")
+            ->method('prepare')
+            ->with("SELECT * FROM books WHERE id = :id")
             ->willReturn($this->mockStatement);
 
         $this->mockStatement
@@ -81,22 +81,6 @@ class BookRepositoryTest extends TestCase
     }
 
     #[Test]
-    public function it_documents_sql_injection_vulnerability_risk(): void
-    {
-        // This test documents that the findById method constructs SQL without proper parameterization
-        // The actual vulnerability exists in BookRepository::findById() line 15:
-        // $data = $this->pdo()->query("SELECT * FROM books WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
-        // 
-        // If the type hint were removed, this would allow SQL injection like:
-        // findById("1 OR 1=1 --") would execute: "SELECT * FROM books WHERE id = 1 OR 1=1 --"
-        //
-        // Current mitigation: PHP 8.4 type hints prevent string injection into int parameter
-        // Risk: If type hints are removed or bypassed, SQL injection becomes possible
-        
-        $this->assertTrue(true, 'SQL injection vulnerability documented - see BookRepository::findById() line 15');
-    }
-
-    #[Test]
     public function it_saves_book_successfully(): void
     {
         $book = BookBuilder::create()
@@ -109,10 +93,21 @@ class BookRepositoryTest extends TestCase
             ->method('beginTransaction');
 
         $this->mockPdo
-            ->expects($this->once())
+            ->expects($invokedCount = $this->exactly(2))
             ->method('prepare')
-            ->with("INSERT INTO public.books(name, author) VALUES (:name, :author)")
-            ->willReturn($this->mockStatement);
+            ->willReturnCallback(function ($parameters) use ($invokedCount) {
+                $invokedCount = $invokedCount->numberOfInvocations();
+
+                if ($invokedCount === 1) {
+                    $this->assertSame("INSERT INTO public.books(name, author) VALUES (:name, :author)", $parameters, $invokedCount);
+                }
+
+                if ($invokedCount === 2) {
+                    $this->assertSame("SELECT * FROM books WHERE id = :id", $parameters, $invokedCount);
+                }
+
+                return $this->mockStatement;
+            });
 
         $this->mockStatement
             ->expects($this->exactly(2))
@@ -124,7 +119,7 @@ class BookRepositoryTest extends TestCase
             });
 
         $this->mockStatement
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('execute');
 
         $this->mockPdo
@@ -138,7 +133,7 @@ class BookRepositoryTest extends TestCase
 
         // Mock the findById call that happens after save
         $this->mockPdo
-            ->expects($this->once())
+            ->expects($this->never())
             ->method('query')
             ->with("SELECT * FROM books WHERE id = 5")
             ->willReturn($this->mockStatement);
@@ -214,7 +209,7 @@ class BookRepositoryTest extends TestCase
             ->method('beginTransaction');
 
         $this->mockPdo
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('prepare')
             ->willReturn($this->mockStatement);
 
@@ -223,7 +218,7 @@ class BookRepositoryTest extends TestCase
             ->method('bindParam');
 
         $this->mockStatement
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('execute');
 
         $this->mockPdo
@@ -237,7 +232,7 @@ class BookRepositoryTest extends TestCase
 
         // Mock findById return
         $this->mockPdo
-            ->expects($this->once())
+            ->expects($this->never())
             ->method('query')
             ->willReturn($this->mockStatement);
 

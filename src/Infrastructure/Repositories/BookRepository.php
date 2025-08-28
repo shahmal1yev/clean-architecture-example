@@ -10,13 +10,14 @@ use PDOException;
 
 readonly class BookRepository extends Repository implements BookRepositoryInterface
 {
+    public function tableName(): string
+    {
+        return 'books';
+    }
+
     public function findById(int $id): Book
     {
-        $data = $this->pdo()->query("SELECT * FROM books WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
-
-        if ($data === false) {
-            throw new PDOException("Book not found: $id");
-        }
+        $data = parent::abstractFindById($id);
 
         return new Book(
             $data['id'],
@@ -29,30 +30,8 @@ readonly class BookRepository extends Repository implements BookRepositoryInterf
 
     public function save(Book $book): Book
     {
-        try {
-            $this->pdo()->beginTransaction();
-
-            $bookData = ['name' => $book->getName(), 'author' => $book->getAuthor()];
-
-            $stmt = $this->pdo()->prepare("INSERT INTO public.books(name, author) VALUES (:name, :author)");
-
-            $stmt->bindParam(':name', $bookData['name']);
-            $stmt->bindParam(':author', $bookData['author']);
-
-            $stmt->execute();
-
-            $this->pdo()->commit();
-
-            $id = $this->pdo()->lastInsertId();
-
-            return $this->findById($id);
-        } catch (PDOException $e) {
-            $this->pdo()->rollBack();
-            throw new PDOException(
-                "An error occurred while saving new book: {$e->getMessage()}",
-                (int) $e->getCode(),
-                $e
-            );
-        }
+        return $this->findById(
+            parent::abstractSave(['name' => $book->getName(), 'author' => $book->getAuthor()])
+        );
     }
 }

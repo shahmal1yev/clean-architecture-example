@@ -7,8 +7,26 @@ services:
   Onion\App\Services\:
     resource: '../src/App/Services/*'
     
+  # CQRS Query Handlers
+  Onion\App\QueryHandlers\:
+    resource: '../src/App/QueryHandlers/*'
+    
   # Make services public for testing
   Onion\App\Services\BookService:
+    public: true
+
+  # Presentation layer services
+  Onion\Presentation\Actions\:
+    resource: '../src/Presentation/Actions/*'
+    public: true
+
+  Onion\Presentation\Adapters\:
+    resource: '../src/Presentation/Adapters/*'
+    public: true
+
+  # Hexagonal Architecture: Port to Adapter binding
+  Onion\Presentation\Ports\BookManagementPort:
+    alias: Onion\Presentation\Adapters\HttpBookManagementAdapter
     public: true
 
   # Infrastructure layer services
@@ -16,9 +34,16 @@ services:
     resource: '../src/Infrastructure/Repositories/*'
     exclude: '../src/Infrastructure/Repositories/Repository.php'
 
+  Onion\Infrastructure\Services\:
+    resource: '../src/Infrastructure/Services/*'
+
   # Bind interface to implementation (public for testing)
   Onion\Domain\Repositories\BookRepositoryInterface:
     alias: Onion\Infrastructure\Repositories\BookRepository
+    public: true
+
+  Onion\Domain\Services\TransactionManagerInterface:
+    alias: Onion\Infrastructure\Services\TransactionManager
     public: true
 
   # Database configuration (you'll want to use environment variables)
