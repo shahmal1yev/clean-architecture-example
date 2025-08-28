@@ -2,9 +2,8 @@
 
 namespace Tests;
 
-use Symfony\Component\Config\FileLocator;
+use Onion\Infrastructure\DependencyInjection\ContainerFactory;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
@@ -17,10 +16,8 @@ class TestCase extends \PHPUnit\Framework\TestCase
         if (!isset(self::$container)) {
             require_once __DIR__ . '/../vendor/autoload.php';
             
-            self::$container = new ContainerBuilder();
-            $loader = new YamlFileLoader(self::$container, new FileLocator(__DIR__ . '/../config'));
-            $loader->load('services.yml');
-            self::$container->compile();
+            // Use the centralized container factory
+            self::$container = ContainerFactory::create(__DIR__ . '/../config');
         }
     }
 }

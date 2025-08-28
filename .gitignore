@@ -3,3 +3,4 @@ composer.lock
 phpunit.xml
 .idea/
 .phpunit.cache
+my_error.log

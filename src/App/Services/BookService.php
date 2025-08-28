@@ -22,9 +22,9 @@ readonly class BookService
         try {
             return $this->transactionManager->transactional(function () use ($name, $author) {
                 return $this->repository->save(new Book(
-                    id: null,
                     name: $name,
                     author: $author,
+                    id: null,
                     createdAt: null,
                     updatedAt: null
                 ));
@@ -68,9 +68,9 @@ readonly class BookService
                 
                 foreach ($bookData as $data) {
                     $book = $this->repository->save(new Book(
-                        id: null,
                         name: $data['name'],
                         author: $data['author'],
+                        id: null,
                         createdAt: null,
                         updatedAt: null
                     ));

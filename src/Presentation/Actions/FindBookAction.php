@@ -4,9 +4,9 @@ namespace Onion\Presentation\Actions;
 
 use Onion\App\Services\BookService;
 use Onion\Domain\Exceptions\FindBookFailedException;
+use Onion\Presentation\Http\JsonResponse;
 use Onion\Presentation\Http\Request;
 use Onion\Presentation\Http\Response;
-use Onion\Presentation\Http\JsonResponse;
 
 readonly class FindBookAction
 {

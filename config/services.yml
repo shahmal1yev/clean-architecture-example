@@ -24,23 +24,23 @@ services:
     resource: '../src/Presentation/Adapters/*'
     public: true
 
-  # Hexagonal Architecture: Port to Adapter binding
   Onion\Presentation\Ports\BookManagementPort:
     alias: Onion\Presentation\Adapters\HttpBookManagementAdapter
     public: true
 
-  # Infrastructure layer services
-  Onion\Infrastructure\Repositories\:
-    resource: '../src/Infrastructure/Repositories/*'
-    exclude: '../src/Infrastructure/Repositories/Repository.php'
-
   Onion\Infrastructure\Services\:
     resource: '../src/Infrastructure/Services/*'
 
-  # Bind interface to implementation (public for testing)
-  Onion\Domain\Repositories\BookRepositoryInterface:
-    alias: Onion\Infrastructure\Repositories\BookRepository
-    public: true
+  Onion\Infrastructure\Repositories\:
+    resource: '../src/Infrastructure/Repositories/*'
+    exclude:
+      - '../src/Infrastructure/Repositories/AbstractRepository.php'
+
+  Onion\Infrastructure\Factory\Repositories\:
+    resource: '../src/Infrastructure/Factory/Repositories/*'
+
+  # Repository interfaces are auto-registered via RepositoryCompilerPass
+  # Convention: Domain\Repositories\{Entity}RepositoryInterface -> Infrastructure\Repositories\{Entity}Repository
 
   Onion\Domain\Services\TransactionManagerInterface:
     alias: Onion\Infrastructure\Services\TransactionManager
