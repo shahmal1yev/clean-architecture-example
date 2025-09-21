@@ -3,7 +3,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__.'/vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/bootstrap.php';
 
 $argv = $_SERVER['argv'];
@@ -21,7 +21,7 @@ switch ($command) {
                 $host = substr($arg, 7);
             }
             if (str_starts_with($arg, '--port=')) {
-                $port = (int) substr($arg, 7);
+                $port = (int)substr($arg, 7);
             }
         }
 
@@ -37,9 +37,15 @@ switch ($command) {
         passthru($cmd);
         break;
 
+    case 'test':
+        echo "Running tests..." . PHP_EOL . PHP_EOL;
+        passthru("vendor/bin/phpunit");
+        break;
+
     default:
         echo "Saw CLI" . PHP_EOL . PHP_EOL;
         echo "Usage:" . PHP_EOL;
-        echo "  php saw serve [--host=127.0.0.1] [--port=8000]\n";
+        echo "  php saw serve [--host=127.0.0.1] [--port=8000]" . PHP_EOL;
+        echo "  php saw test" . PHP_EOL;
         break;
 }

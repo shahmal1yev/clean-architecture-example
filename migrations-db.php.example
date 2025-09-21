@@ -1,9 +1,0 @@
-<?php
-
-return [
-    'driver' => 'driver',
-    'dbname' => 'database name',
-    'user' => 'server username',
-    'password' => 'server password',
-    'host' => 'server name',
-];
