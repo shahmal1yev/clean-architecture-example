@@ -38,7 +38,7 @@ class HTTPException extends \Exception implements \Throwable, DTOInterface
             'message' => $this->message,
         ];
 
-        if ($this->getPrevious()) {
+        if (env('APP_DEBUG') === 'true' && $this->getPrevious()) {
             $content['trace'] = $this->getPrevious()->getTrace();
         }
 

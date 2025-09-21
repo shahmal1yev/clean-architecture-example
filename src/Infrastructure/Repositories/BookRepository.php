@@ -7,6 +7,8 @@ namespace Onion\Infrastructure\Repositories;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\OptimisticLockException;
 use Onion\Domain\Entities\BookInterface;
 use Onion\Domain\Exceptions\Book\BookCreationFailedException;
 use Onion\Domain\Exceptions\Book\BookNotFoundException;
@@ -19,6 +21,9 @@ final readonly class BookRepository implements BookRepositoryInterface
     {
     }
 
+    /**
+     * @throws BookCreationFailedException
+     */
     public function create(BookInterface $book): BookInterface
     {
         $book->createdAt = new DateTimeImmutable();
@@ -34,11 +39,20 @@ final readonly class BookRepository implements BookRepositoryInterface
         return $book;
     }
 
+    /**
+     * @throws OptimisticLockException
+     * @throws ORMException
+     */
     public function findById(int $id): ?BookInterface
     {
         return $this->entityManager->find(Book::class, $id);
     }
 
+    /**
+     * @throws OptimisticLockException
+     * @throws BookNotFoundException
+     * @throws ORMException
+     */
     public function findOrFail(int $id): BookInterface
     {
         $book = $this->entityManager->find(Book::class, $id);
@@ -53,9 +67,9 @@ final readonly class BookRepository implements BookRepositoryInterface
     public function paginate(int $page = 1, int $size = 10): array
     {
         return $this->entityManager->createQueryBuilder()
-            ->select('books')
-            ->from(Book::class, 'books')
-            ->orderBy('books.id', 'ASC')
+            ->select('book')
+            ->from(Book::class, 'book')
+            ->orderBy('book.id', 'ASC')
             ->setFirstResult(($page - 1) * $size)
             ->setMaxResults($size)
             ->getQuery()
@@ -71,4 +85,3 @@ final readonly class BookRepository implements BookRepositoryInterface
             ->getSingleScalarResult();
     }
 }
-
