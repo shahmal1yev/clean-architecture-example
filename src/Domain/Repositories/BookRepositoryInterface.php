@@ -1,11 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Onion\Domain\Repositories;
 
-use Onion\Domain\Entities\Book;
+use Onion\Domain\Entities\BookInterface;
 
 interface BookRepositoryInterface
 {
-    public function findById(int $id): Book;
-    public function save(Book $book): Book;
+    public function create(BookInterface $book): BookInterface;
+    public function findById(int $id): ?BookInterface;
+    public function findOrFail(int $id): BookInterface;
+    public function paginate(int $page = 1, int $size = 10): array;
+    public function count(): int;
 }

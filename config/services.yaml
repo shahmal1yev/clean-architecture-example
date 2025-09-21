@@ -1,0 +1,43 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  Onion\Infrastructure\Factories\ORM\MetadataConfigFactory:
+    public: false
+
+  Doctrine\ORM\Configuration:
+    public: false
+    factory: [ '@Onion\Infrastructure\Factories\ORM\MetadataConfigFactory', 'create' ]
+
+  Onion\Infrastructure\Factories\ORM\ConnectionFactory:
+    public: false
+
+  Doctrine\DBAL\Connection:
+    public: false
+    factory: [ '@Onion\Infrastructure\Factories\ORM\ConnectionFactory', 'create' ]
+
+  Doctrine\ORM\EntityManager:
+    public: false
+
+  Doctrine\ORM\EntityManagerInterface:
+    public: false
+    alias: Doctrine\ORM\EntityManager
+
+  Onion\Infrastructure\Factories\Validator\ValidatorFactory:
+    public: false
+
+  Symfony\Component\Validator\Validator\ValidatorInterface:
+    public: false
+    factory: [ '@Onion\Infrastructure\Factories\Validator\ValidatorFactory', 'create' ]
+
+  Onion\Infrastructure\Factories\Request\RequestFactory:
+    public: false
+
+  Symfony\Component\HttpFoundation\Request:
+    public: false
+    factory: [ '@Onion\Infrastructure\Factories\Request\RequestFactory', 'create' ]
+
+  Onion\Presentation\Adapters\:
+    public: true
+    resource: '../src/Presentation/Adapters/*'

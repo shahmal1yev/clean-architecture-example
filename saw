@@ -1,0 +1,45 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__.'/vendor/autoload.php';
+require_once __DIR__ . '/bootstrap.php';
+
+$argv = $_SERVER['argv'];
+$command = $argv[1] ?? null;
+
+switch ($command) {
+    case 'serve':
+        $appUrl = env('APP_URL');
+        $parts = parse_url($appUrl);
+        $host = $parts['host'] ?? '127.0.0.1';
+        $port = $parts['port'] ?? 8000;
+
+        foreach ($argv as $arg) {
+            if (str_starts_with($arg, '--host=')) {
+                $host = substr($arg, 7);
+            }
+            if (str_starts_with($arg, '--port=')) {
+                $port = (int) substr($arg, 7);
+            }
+        }
+
+        $cmd = sprintf(
+            'php -S %s:%d -t ./',
+            $host,
+            $port
+        );
+
+        echo "Saw dev server running at http://{$host}:{$port}" . PHP_EOL;
+        echo "Press Ctrl+C to stop." . PHP_EOL . PHP_EOL;
+
+        passthru($cmd);
+        break;
+
+    default:
+        echo "Saw CLI" . PHP_EOL . PHP_EOL;
+        echo "Usage:" . PHP_EOL;
+        echo "  php saw serve [--host=127.0.0.1] [--port=8000]\n";
+        break;
+}

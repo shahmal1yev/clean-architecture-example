@@ -1,58 +1,74 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Onion\Infrastructure\Repositories;
 
-use Carbon\Carbon;
+use DateTimeImmutable;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\ORM\EntityManagerInterface;
+use Onion\Domain\Entities\BookInterface;
+use Onion\Domain\Exceptions\Book\BookCreationFailedException;
+use Onion\Domain\Exceptions\Book\BookNotFoundException;
 use Onion\Domain\Repositories\BookRepositoryInterface;
-use Onion\Domain\Entities\Book;
-use PDO;
-use PDOException;
+use Onion\Infrastructure\Entities\Book;
 
-readonly class BookRepository extends Repository implements BookRepositoryInterface
+final readonly class BookRepository implements BookRepositoryInterface
 {
-    public function findById(int $id): Book
+    public function __construct(private EntityManagerInterface $entityManager)
     {
-        $data = $this->pdo()->query("SELECT * FROM books WHERE id = $id")->fetch(PDO::FETCH_ASSOC);
-
-        if ($data === false) {
-            throw new PDOException("Book not found: $id");
-        }
-
-        return new Book(
-            $data['id'],
-            $data['name'],
-            $data['author'],
-            Carbon::parse($data['created_at'])->toDateTimeImmutable(),
-            Carbon::parse($data['updated_at'])->toDateTimeImmutable()
-        );
     }
 
-    public function save(Book $book): Book
+    public function create(BookInterface $book): BookInterface
     {
+        $book->createdAt = new DateTimeImmutable();
+        $book->updatedAt = new DateTimeImmutable();
+
         try {
-            $this->pdo()->beginTransaction();
-
-            $bookData = ['name' => $book->getName(), 'author' => $book->getAuthor()];
-
-            $stmt = $this->pdo()->prepare("INSERT INTO public.books(name, author) VALUES (:name, :author)");
-
-            $stmt->bindParam(':name', $bookData['name']);
-            $stmt->bindParam(':author', $bookData['author']);
-
-            $stmt->execute();
-
-            $this->pdo()->commit();
-
-            $id = $this->pdo()->lastInsertId();
-
-            return $this->findById($id);
-        } catch (PDOException $e) {
-            $this->pdo()->rollBack();
-            throw new PDOException(
-                "An error occurred while saving new book: {$e->getMessage()}",
-                (int) $e->getCode(),
-                $e
-            );
+            $this->entityManager->persist($book);
+            $this->entityManager->flush();
+        } catch (\Throwable $exception) {
+            throw new BookCreationFailedException("Book creation failed: " . $exception->getMessage());
         }
+
+        return $book;
+    }
+
+    public function findById(int $id): ?BookInterface
+    {
+        return $this->entityManager->find(Book::class, $id);
+    }
+
+    public function findOrFail(int $id): BookInterface
+    {
+        $book = $this->entityManager->find(Book::class, $id);
+
+        if (null === $book) {
+            throw new BookNotFoundException("Book not found: $id");
+        }
+
+        return $book;
+    }
+
+    public function paginate(int $page = 1, int $size = 10): array
+    {
+        return $this->entityManager->createQueryBuilder()
+            ->select('books')
+            ->from(Book::class, 'books')
+            ->orderBy('books.id', 'ASC')
+            ->setFirstResult(($page - 1) * $size)
+            ->setMaxResults($size)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function count(): int
+    {
+        return (int) $this->entityManager->createQueryBuilder()
+            ->select('COUNT(books.id)')
+            ->from(Book::class, 'books')
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }
+
